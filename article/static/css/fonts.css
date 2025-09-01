@@ -1,0 +1,14 @@
+/* Force Chinese to use a CN-friendly font stack */
+:lang(zh) {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Heiti SC", sans-serif;
+}
+
+/* Japanese text stays with JP stack */
+:lang(ja) {
+  font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+/* English default */
+:lang(en) {
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+}

@@ -1,0 +1,47 @@
+{% extends "article_base.html" %}
+{% load static %}
+{% load tz %}
+
+{% block content %}
+  <h1>週間ニュース ({{ start_date }} – {{ end_date }})</h1>
+  <p><a href="?export=docx">Wordにエクスポート</a></p>
+
+  {% if grouped %}
+    {% for section in grouped %}
+      <section style="margin-bottom:2rem;">
+        <h2>{{ section.tag_name }}</h2>
+
+        {% if section.articles %}
+          <ul style="list-style:none; padding-left:0; margin:0;">
+            {% for article in section.articles %}
+              <li style="margin:1rem 0; padding:0.5rem 0; border-bottom:1px solid #eee;">
+                <div><small>{{ article.publish|date:"Y-m-d" }}</small></div>
+                <div><strong>{{ article.display_title }}</strong></div>
+                <div>{{ article.snippet }}</div>
+
+                {% if article.url or article.url_en or article.url_zh %}
+                  <div style="margin-top:.25rem;">
+                    {% if article.url %}
+                      原文: <a href="{{ article.url }}" target="_blank" rel="noopener">{{ article.url }}</a>
+                    {% endif %}
+                    {% if article.url_en or article.url_zh %}
+                      <div>
+                        {% if article.url_en %}<a href="{{ article.url_en }}" target="_blank" rel="noopener">English translation</a>{% endif %}
+                        {% if article.url_en and article.url_zh %} / {% endif %}
+                        {% if article.url_zh %}<a href="{{ article.url_zh }}" target="_blank" rel="noopener">中訳</a>{% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p style="color:#666;">今週主要なニュースなし</p>
+        {% endif %}
+      </section>
+    {% endfor %}
+  {% else %}
+    <p>タグが見つかりません。</p>
+  {% endif %}
+{% endblock %}

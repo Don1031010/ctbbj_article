@@ -1,0 +1,107 @@
+<!-- templates/base.html -->
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}News{% endblock %}</title>
+
+  <!-- Tailwind Play CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flag-icons/css/flag-icons.min.css">
+  <!-- Flowbite CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" />
+  <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+
+  <style>
+    /* optional: nicer content width */
+    .container { max-width: 1100px; }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <!-- Navbar -->
+  <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="container mx-auto px-4">
+      <div class="flex h-14 items-center justify-between">
+        <a href="{% url 'article:article_list' %}" class="flex items-center gap-2 text-lg font-semibold">
+          🗞️ <span>News Clipping</span>
+        </a>
+
+        <!-- Right side: language + theme placeholder -->
+        <div class="flex items-center gap-2">
+          <!-- Language switcher -->
+<div class="relative">
+  <!-- Trigger button -->
+  <button id="langMenuButton"
+          data-dropdown-toggle="langMenu"
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm hover:bg-gray-50">
+    <span class="fi fi-{{ lang_current.fi }}"></span>
+    <span class="hidden sm:inline">{{ lang_current.label }}</span>
+    <svg class="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.06l3.71-3.83a.75.75 0 111.08 1.04l-4.25 4.4a.75.75 0 01-1.08 0l-4.25-4.4a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+    </svg>
+  </button>
+
+  <!-- Dropdown -->
+  <div id="langMenu"
+       class="z-50 hidden w-48 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white shadow">
+    <ul class="py-2 text-sm text-gray-700" role="menu" aria-labelledby="langMenuButton">
+      {% for f in flags %}
+      <li>
+        <a href="{% url 'article:set_lang' %}?lang={{ f.code }}"
+           role="menuitem"
+           class="flex items-center gap-2 px-3 py-2 hover:bg-gray-50
+                  {% if lang == f.code %}bg-gray-100{% endif %}">
+          <span class="fi fi-{{ f.fi }}"></span>
+          <span class="flex-1">{{ f.label }}</span>
+          {% if lang == f.code %}
+            <!-- active check -->
+            <svg class="h-4 w-4 text-sky-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M16.704 5.29a1 1 0 00-1.408-1.42L8.25 10.917 5.7 8.367a1 1 0 10-1.4 1.426l3.6 3.536a1 1 0 001.42-.01l7.384-8.03z" clip-rule="evenodd"/>
+            </svg>
+          {% endif %}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+          <!-- Mobile menu button (Flowbite collapse example if you add a sidebar) -->
+          <!-- Placeholder for future dropdowns -->
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="container mx-auto px-4 py-6">
+    {% if messages %}
+      <div class="space-y-2">
+        {% for message in messages %}
+          <div class="p-3 rounded-md text-sm
+                      {% if message.tags == 'success' %} bg-green-50 text-green-800 border border-green-200
+                      {% elif message.tags == 'error' %} bg-red-50 text-red-800 border border-red-200
+                      {% else %} bg-blue-50 text-blue-800 border border-blue-200 {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-gray-200 py-6 mt-10 text-center text-sm text-gray-500">
+    &copy; {{ now|date:"Y" }} CTBBJ
+  </footer>
+
+  <!-- Flowbite JS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

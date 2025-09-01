@@ -1,0 +1,91 @@
+{# templates/article/article_list.html #}
+{% extends "article_base.html" %}
+{% load static %}
+
+{% block title %}News{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <!-- Main list -->
+  <section class="lg:col-span-9">
+    <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-left text-base">
+          <thead class="bg-gray-50 text-gray-700">
+            <tr>
+              <th class="px-6 py-3 font-semibold">Title</th>
+              <th class="px-6 py-3 font-semibold w-40">Date</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            {% for article in articles %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-3">
+                <a href="{{ article.get_absolute_url }}" class="text-sky-700 hover:underline" lang="{{ lang }}">
+                  {{ article.display_title|default:article.title }}
+                </a>
+              </td>
+              <td class="px-6 py-3 text-gray-600" lang="{{ lang }}">{{ article.publish|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td class="px-6 py-6 text-gray-500" colspan="2">No articles found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if is_paginated %}
+      <div class="px-4 py-3 border-t border-gray-200">
+        <nav class="flex items-center justify-between" aria-label="Pagination">
+          <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+              <a href="?page=1" class="px-3 py-1 rounded border hover:bg-gray-50">« First</a>
+              <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded border hover:bg-gray-50">‹ Prev</a>
+            {% endif %}
+          </div>
+          <div class="text-sm text-gray-600">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+          <div class="flex gap-2">
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded border hover:bg-gray-50">Next ›</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 rounded border hover:bg-gray-50">Last »</a>
+            {% endif %}
+          </div>
+        </nav>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Sidebar filter -->
+  <aside class="lg:col-span-3 space-y-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-4">
+      <h3 class="font-semibold mb-2">Date filters</h3>
+      <ul class="space-y-1">
+        {% for code, label, count in publish_filters %}
+          <li>
+            <a href="?{% if code %}period={{ code }}{% endif %}" class="text-sm text-gray-700 hover:underline">
+              {{ label }} <span class="text-gray-500">({{ count }})</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="rounded-xl border border-gray-200 bg-white p-4">
+      <h3 class="font-semibold mb-2">Company filters</h3>
+      <ul class="space-y-1">
+        <li><a href="?" class="text-sm text-gray-700 hover:underline">全て</a></li>
+        {% for tag in tag_list %}
+          <li>
+            <a href="?tag={{ tag.slug }}" class="text-sm text-gray-700 hover:underline">
+              {{ tag.name }} <span class="text-gray-500">({{ tag.article_count }})</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

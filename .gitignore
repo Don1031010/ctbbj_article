@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pyc
+
+# Environment variables
+.env
+
+# Django static & media (if generated in project root)
+staticfiles/
+media/
+
+# others
+nginx
+certbot
+cert.crt
+cert.key
+
+node_modules/
