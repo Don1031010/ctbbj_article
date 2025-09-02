@@ -1,6 +1,6 @@
 # article/admin.py
 from django.contrib import admin
-from .models import Article, ArticleTranslation, Vocabulary
+from .models import Article, ArticleTranslation
 from django.db.models import Count, Q
 from django.contrib.admin.helpers import ActionForm
 from django import forms
