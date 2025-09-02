@@ -99,7 +99,10 @@
       {% endblock %}
     </main>
 
-    <footer class="border-t border-gray-200 py-6 mt-10 text-center text-sm text-gray-500">&copy; {{ now|date:'Y' }} CTBBJ</footer>
+    <footer class="border-t border-gray-200 py-6 mt-10 text-center text-sm text-gray-500">&copy; {{ now|date:'Y' }} 
+      CTBBJ
+      <a href="javascript:{% include 'articleclipper_launcher.js' %}" class="button">Nikkei Clipping</a>
+    </footer>
 
     <!-- Flowbite JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
