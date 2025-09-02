@@ -136,8 +136,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = [ "marianstreet.tokyo", "www.marianstreet.tokyo", "160.251.172.138"]
-CSRF_TRUSTED_ORIGINS = [ "https://marianstreet.tokyo", "https://www.marianstreet.tokyo", "http://160.251.172.138"]
+ALLOWED_HOSTS = [ "ctbbj.marianstreet.tokyo", "www.ctbbj.marianstreet.tokyo", "160.251.172.138"]
+CSRF_TRUSTED_ORIGINS = [ "https://ctbbj.marianstreet.tokyo", "https://www.ctbbj.marianstreet.tokyo", "https://160.251.172.138"]
 
 
 ARTICLE_SECRET_TOKEN = 'TmeGoqJUSLcHelEpMdOeGKjw9hmBlgHMCF'
