@@ -1,4 +1,4 @@
-const siteUrl = '//marianstreet.tokyo/';
+const siteUrl = '//ctbbj.marianstreet.tokyo/';
 const styleUrl = siteUrl + 'static/css/articleclipper.css';
 
 // load CSS
