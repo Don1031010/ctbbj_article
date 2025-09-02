@@ -73,6 +73,10 @@ TEMPLATES = [
     },
 ]
 
+TEMPLATES[0]["OPTIONS"]["context_processors"] += [
+    "article.context_processors.active_lang",
+]
+
 WSGI_APPLICATION = 'clipping.wsgi.application'
 
 
