@@ -1,0 +1,62 @@
+#nikkei-container-element {
+    background:#fff;
+    border-bottom:8px solid #12c064;
+    font-family:"Helvetica Neue", helvetica, arial, sans-serif !important;
+    padding:10px; overflow:auto;
+    box-shadow:0px 0px 8px 0 #666;
+    position:fixed;
+    width:400px;
+    min-height:200px;
+    top:10px;
+    right:10px;
+    z-index:1000000000000;
+}
+
+#nikkei-container-element h1 {
+    font-family:"Helvetica Neue", helvetica, arial, sans-serif;
+    font-weight:normal;
+    color:#333;
+    font-size:18px;
+    padding:4px 0 20px 0;
+ }
+
+#nikkei-container-element #close {
+    float:right;
+    font-size:18px;
+    text-decoration:none;
+    color:#666;
+    margin-top:-6px;
+}
+
+#nikkei-container-element #close:hover {
+    color:#000;
+}
+
+#nikkei-container-element .article {
+    max-height: 600px;
+    margin-bottom:0px;
+    overflow-y:auto;
+}
+
+#nikkei-container-element p {
+    margin-bottom: 1em; /* adjust as needed */
+}
+#nikkei-container-element h2 {
+    font-weight: bold;
+}
+
+#save-article {
+background-color: #12c064; /* soft blue - change as needed */
+color: white;
+border: none;
+padding: 6px 12px;
+font-size: 16px;
+font-weight: bold;
+border-radius: 6px;
+cursor: pointer;
+margin-bottom: 0.7em;
+}
+
+#save-article:hover {
+background-color: #0e9a50;
+}
