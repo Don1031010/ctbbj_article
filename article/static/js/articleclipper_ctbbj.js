@@ -22,7 +22,7 @@ body.innerHTML += boxHtml;
 //
 // get the article and submit it
 //
-async function articleclipperLaunch2() {
+async function articleclipperLaunch_ctbbj() {
   // title selectors
   const titleSelectors = 'article[class^="container_"] h1[class^="title_"], div.cmn-section h1.cmn-article_title';
   const dateSelectors = 'article[class^="container_"] div[class^="timeStampOverride_"] time, dl.cmn-article_status dd.cmnc-publish';
@@ -140,4 +140,4 @@ function getMostMentionedCompany(title, text) {
 }
 
 // launch the bookmkarklet
-articleclipperLaunch2();
+articleclipperLaunch_ctbbj();
