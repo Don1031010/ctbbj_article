@@ -6,3 +6,5 @@ psycopg-binary==3.2.9
 python-decouple==3.8
 sqlparse==0.5.3
 gunicorn==23.0.0
+requests>=2.31.0
+
