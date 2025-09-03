@@ -183,50 +183,98 @@ class ArticleListView(ListView):
 
 @csrf_exempt  # Needed for cross-origin form posts
 def receive_article(request):
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        title   = data.get('title') or ''
+        text    = data.get('text') or ''
+        url     = data.get('url') or ''
+        publish = data.get('publish') or ''
+        tag     = data.get('tag') or ''
+        token   = data.get('secret_token')
+
+        if token != 'TmeGoqJUSLcHelEpMdOeGKjw9hmBlgHMCF':
+            return HttpResponseBadRequest("Invalid token.")
+
+        User = get_user_model()
+        user = User.objects.get(id=1)
+
+        slug = slugify(title, allow_unicode=True)
         try:
-            data = json.loads(request.body)
-            title = data.get('title')
-            text = data.get('text')
-            url = data.get('url')
-            publish = data.get('publish')
-            tag = data.get('tag')
-            token = data.get('secret_token')
+            publish_dt = parse_japanese_date(publish)
+        except Exception:
+            publish_dt = now()
 
-            # validate secret token
-            if token != 'TmeGoqJUSLcHelEpMdOeGKjw9hmBlgHMCF':
-                return HttpResponseBadRequest("Invalid token.")
+        article, created = Article.objects.get_or_create(
+            Q(slug=slug) | Q(url=url),
+            defaults=dict(
+                title=title,
+                slug=slug,
+                url=url,
+                text=text,
+                publish=publish_dt,
+                user=user,
+            )
+        )
 
-            User = get_user_model()
-            user = User.objects.get(id=1)  # default user, adjust as needed
+        if tag:
+            article.tags.add(tag)
 
-            slug = slugify(title, allow_unicode=True)
-            try:
-                publish = parse_japanese_date(publish)
-            except Exception:
-                publish = now()
+        return JsonResponse(
+            {"message": "Article ready", "article_id": article.id, "created": created},
+            status=201 if created else 200
+        )
 
-            try:
-                article = Article.objects.create(
-                    title=title,
-                    slug=slug,
-                    url=url,
-                    text=text,
-                    publish=publish,
-                    user=user
-                )
-            except IntegrityError:
-                return JsonResponse({'message': 'Article already exists'}, status=400)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
-            if tag:
-                article.tags.add(tag)
 
-            return JsonResponse({"message": "Article received & created"}, status=201)
-        except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+@csrf_exempt
+def receive_translation(request):
+    """
+    Body: {article_id: int, language: 'en'|'zh', html: '<div id="engDiffBox">...</div>', secret_token: '...'}
+    Stores:
+      - title_translated = original article.title (trim to 300)
+      - text_translated  = html (as-is)
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
 
-    return JsonResponse({"error": "Only POST allowed"}, status=405)
+    try:
+        data = json.loads(request.body)
+        token      = data.get('secret_token')
+        article_id = int(data.get('article_id'))
+        language   = (data.get('language') or '').lower()
+        html       = data.get('html') or ''
 
+        if token != 'TmeGoqJUSLcHelEpMdOeGKjw9hmBlgHMCF':
+            return HttpResponseBadRequest("Invalid token.")
+        if language not in ('en', 'zh'):
+            return HttpResponseBadRequest("language must be 'en' or 'zh'.")
+        if not html:
+            return HttpResponseBadRequest("html required.")
+
+        article = Article.objects.get(id=article_id)
+
+        obj, created = ArticleTranslation.objects.update_or_create(
+            article=article, language=language,
+            defaults=dict(
+                title_translated = (article.title or '')[:300],
+                text_translated  = html,  # store raw outerHTML
+            )
+        )
+        return JsonResponse(
+            {"message": f"translation {language} saved", "article_id": article.id, "created": created},
+            status=201 if created else 200
+        )
+
+    except Article.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "article not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+    
 
 def parse_japanese_date(date_str):
     """Parse date strings like '2025年8月6日 15:47' or '2025/8/8付'."""

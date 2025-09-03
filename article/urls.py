@@ -11,7 +11,10 @@ urlpatterns = [
     path('', views.ArticleListView.as_view(), name='article_list'),
     path("lang/", views_lang.set_lang, name="set_lang"),
     path('<int:year>/<int:month>/<int:day>/<str:slug>/', views.ArticleDetailView.as_view(), name='article_detail'),
+    
     path('receive/', views.receive_article, name='receive_article'),
+    path('receive-translation/', views.receive_translation, name='receive_translation'),
+
     path("news/weekly/", views.weekly_news, name="weekly_news"),
 
  ]
