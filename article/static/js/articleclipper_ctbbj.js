@@ -133,7 +133,7 @@ async function articleclipperLaunch_ctbbj() {
       if (enHtml && enHtml.length > 0) {
         setStatus(statusEl, 'Saving English translation…');
         const enPayload = { article_id: articleId, language: 'en', html: enHtml, secret_token: SECRET };
-        const enRes = await postJSON(siteUrl + 'receive-translation/', enPayload);
+        const enRes = await postJSON(siteUrl + 'article/receive-translation/', enPayload);
         if (!enRes.ok) console.warn('EN save failed:', await enRes.text());
       } else {
         console.warn('EN engDiffBox not found/timed out.');
@@ -143,7 +143,7 @@ async function articleclipperLaunch_ctbbj() {
       if (zhHtml && zhHtml.length > 0) {
         setStatus(statusEl, 'Saving Chinese translation…');
         const zhPayload = { article_id: articleId, language: 'zh', html: zhHtml, secret_token: SECRET };
-        const zhRes = await postJSON(siteUrl + 'receive-translation/', zhPayload);
+        const zhRes = await postJSON(siteUrl + 'article/receive-translation/', zhPayload);
         if (!zhRes.ok) console.warn('ZH save failed:', await zhRes.text());
       } else {
         console.warn('ZH engDiffBox not found/timed out.');
