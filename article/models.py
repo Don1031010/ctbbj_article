@@ -69,7 +69,7 @@ class Article(models.Model):
 class ArticleTranslation(models.Model):
     article = models.ForeignKey(Article, related_name="translations", on_delete=models.CASCADE)
     language = models.CharField(max_length=2, choices=LANG_CHOICES)
-    title_translated = models.CharField(max_length=300)
+    title_translated = models.CharField(blank=True, null=True, max_length=300)
     text_translated = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
