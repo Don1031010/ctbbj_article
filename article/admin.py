@@ -80,7 +80,7 @@ class ArticleAdmin(admin.ModelAdmin):
 
 @admin.register(ArticleTranslation)
 class ArticleTranslationAdmin(admin.ModelAdmin):
-    list_display = ("article", "language", "updated")
+    list_display = ("article", "title_translated", "language", "updated")
     list_filter = ("language", "updated")
     search_fields = ("article__title", "title_translated", "text_translated")
     ordering = ("-updated",)
