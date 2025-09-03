@@ -24,6 +24,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.html import strip_tags
+from django.db import transaction
 
 from urllib.parse import urlparse, parse_qs
 
@@ -207,17 +208,24 @@ def receive_article(request):
         except Exception:
             publish_dt = now()
 
-        article, created = Article.objects.get_or_create(
-            Q(slug=slug) | Q(url=url),
-            defaults=dict(
-                title=title,
-                slug=slug,
-                url=url,
-                text=text,
-                publish=publish_dt,
-                user=user,
-            )
-        )
+        # Try to find by slug OR url
+        article = Article.objects.filter(Q(slug=slug) | Q(url=url)).first()
+        created = False
+
+        if not article:
+            with transaction.atomic():
+                # Re-check in case of race
+                article = Article.objects.filter(Q(slug=slug) | Q(url=url)).select_for_update().first()
+                if not article:
+                    article = Article.objects.create(
+                        title=title,
+                        slug=slug,
+                        url=url,
+                        text=text,
+                        publish=publish_dt,
+                        user=user,
+                    )
+                    created = True
 
         if tag:
             article.tags.add(tag)
@@ -226,7 +234,6 @@ def receive_article(request):
             {"message": "Article ready", "article_id": article.id, "created": created},
             status=201 if created else 200
         )
-
     except Exception as e:
         return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
