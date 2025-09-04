@@ -268,7 +268,7 @@ def receive_translation(request):
         obj, created = ArticleTranslation.objects.update_or_create(
             article=article, language=language,
             defaults=dict(
-                title_translated = (article.title or '')[:300],
+                # title_translated = None,
                 text_translated  = html,  # store raw outerHTML
             )
         )
