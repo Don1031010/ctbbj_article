@@ -3,7 +3,7 @@
 const siteUrl = 'https://ctbbj.marianstreet.tokyo/';
 const styleUrl = siteUrl + 'static/css/articleclipper.css';
 const SECRET = 'TmeGoqJUSLcHelEpMdOeGKjw9hmBlgHMCF';
-const TRANSLATE_ENDPOINT = siteUrl + 'article/receive_translation';
+const TRANSLATE_ENDPOINT = siteUrl + 'article/receive-translation/';
 
 // ---------- Inject CSS ----------
 (function injectCss() {
