@@ -113,12 +113,6 @@ async function articleclipperLaunch_ctbbj() {
       const enUrl = `https://www.nikkei.com/news/article-translation/?ng=${ngId}`;
       const zhUrl = `https://www.nikkei.com/news/article-translation/?bf=0&ng=${ngId}&mta=c`;
 
-      // 3) Open both pages (no noopener/noreferrer so DOM is accessible)
-      // 2) Build translation URLs (from current page)
-      const ngId = extractNikkeiId(window.location.href) || '';
-      const enUrl = `https://www.nikkei.com/news/article-translation/?ng=${ngId}`;
-      const zhUrl = `https://www.nikkei.com/news/article-translation/?bf=0&ng=${ngId}&mta=c`;
-
       // 3) Open EN first, delay, then ZH (no noopener so DOM is accessible)
       const enWin = safeOpen(enUrl);
       await humanDelay(1100, 2300);          // small pause before next open
