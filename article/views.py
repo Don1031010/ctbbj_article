@@ -674,3 +674,9 @@ def weekly_news(request):
         )
         resp["Content-Disposition"] = f'attachment; filename=\"{filename}\"'
         return resp
+    # ---- HTML render ----
+    return render(request, "article/weekly_news.html", {
+        "grouped": grouped,          # list of {"tag_name": str, "articles": [Article]}
+        "start_date": start_date,
+        "end_date": today,
+    })
