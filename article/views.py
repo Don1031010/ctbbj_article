@@ -394,7 +394,7 @@ def format_jp_range(start, end) -> str:
     return f"{start.year}年{start.month}月{start.day}日～{end.year}年{end.month}月{end.day}日"
 
 
-def weekly_news(request):
+# def weekly_news(request):
     """
     8-day JA weekly view:
       (1) list all tags for article.Article (sorted, excluding 'unknown'/'unknow'),
@@ -520,3 +520,157 @@ def weekly_news(request):
         "start_date": start_date,
         "end_date": today,
     })
+    
+def weekly_news(request):
+    """
+    8-day JA weekly view (now with optional date window):
+      (1) list all tags for article.Article (sorted, excluding 'unknown'/'unknow'),
+      (2) for each tag, fetch news within [start_date, end_date] newest-first, or '今週主要なニュースなし',
+      (3) HTML view and matching DOCX export (with clickable original / EN / ZH links).
+
+    Optional query params:
+      - ?start=YYYY-MM-DD
+      - ?end=YYYY-MM-DD
+      If neither provided, defaults to 'past 8 days including today'.
+      If only one provided, expands to an 8-day window (inclusive).
+    """
+    # ---- Resolve window (defaults to past 8 days including today) ----
+    today = timezone.localdate()
+
+    def _parse_iso(dstr: str) -> date | None:
+        try:
+            return date.fromisoformat(dstr)
+        except Exception:
+            return None
+
+    q_start = request.GET.get("start") or request.GET.get("start_date")
+    q_end = request.GET.get("end") or request.GET.get("end_date")
+
+    start_date = _parse_iso(q_start) if q_start else None
+    end_date = _parse_iso(q_end) if q_end else None
+
+    if start_date is None and end_date is None:
+        # Default: past 8 days including today
+        end_date = today
+        start_date = end_date - timedelta(days=7)
+    elif start_date is not None and end_date is None:
+        # Expand to 8-day window from start
+        end_date = start_date + timedelta(days=7)
+    elif start_date is None and end_date is not None:
+        # Expand to 8-day window ending at end
+        start_date = end_date - timedelta(days=7)
+    # else: both provided → use as-is
+
+    # If user accidentally swapped them, fix.
+    if start_date > end_date:
+        start_date, end_date = end_date, start_date
+
+    # ---- All tags for this content type (sorted by name), excluding unknown/unknow ----
+    ct = ContentType.objects.get_for_model(Article)
+    all_tags = (
+        Tag.objects.filter(taggit_taggeditem_items__content_type=ct)
+        .distinct()
+    )
+
+    def keep_tag(t: Tag) -> bool:
+        return (t.name or "").strip().casefold() not in EXCLUDED_TAGS
+
+    tags_sorted = sorted(
+        (t for t in all_tags if keep_tag(t)),
+        key=lambda t: (t.name or "").strip().casefold()
+    )
+
+    # ---- Build grouped data: one section per tag ----
+    grouped = []  # list of dicts: {"tag_name": str, "articles": [Article]}
+    for tag in tags_sorted:
+        qs = (
+            Article.objects
+            .filter(
+                language="ja",
+                publish__range=(start_date, end_date),
+                tags__in=[tag],
+            )
+            .order_by("-publish", "-created")
+            .distinct()
+        )
+        arts = list(qs)
+
+        # annotate each article
+        for a in arts:
+            a.display_title = clean_title(a.title)
+            a.snippet = excerpt_ja(a.text)
+            a.url_en, a.url_zh = derive_nikkei_translation_urls(a.url)
+
+        grouped.append({"tag_name": tag.name, "articles": arts})
+
+    # ---- DOCX export ----
+    if request.GET.get("export") == "docx":
+        from docx import Document
+        from docx.shared import Pt  # <- for tight paragraph spacing
+        from io import BytesIO
+        from django.http import HttpResponse
+
+        doc = Document()
+
+        # 3-line bold header with selected dates
+        date_line = format_jp_range(start_date, end_date)
+        for line in ("CP提携先企業動向まとめ", date_line, "日本正大光明 投資部"):
+            p = doc.add_paragraph()
+            p.add_run(line).bold = True
+
+        for section in grouped:
+            tag_name = section["tag_name"]
+            arts = section["articles"]
+
+            doc.add_heading(tag_name, level=2)
+
+            if not arts:
+                doc.add_paragraph("今週主要なニュースなし")
+                continue
+
+            for a in arts:
+                # date (bold) + NEW line + title (bold)
+                p = doc.add_paragraph()
+                r1 = p.add_run(a.publish.strftime("%Y-%m-%d"))
+                r1.add_break()
+                p.add_run(a.display_title).bold = True
+                p.paragraph_format.space_after = Pt(3)
+                # excerpt with no extra spacing after
+                if a.snippet:
+                    p_snip = doc.add_paragraph(a.snippet)
+                    p_snip.paragraph_format.space_after = Pt(0)
+
+                # ONE LINE: 原文 (English translation / 中訳)
+                if a.url or a.url_en or a.url_zh:
+                    p_links = doc.add_paragraph()
+                    fmt = p_links.paragraph_format
+                    fmt.space_before = Pt(0)
+                    fmt.space_after = Pt(0)
+
+                    first = True
+                    if a.url:
+                        add_hyperlink(p_links, a.url, "原文")
+                        first = False
+
+                    if a.url_en or a.url_zh:
+                        p_links.add_run(" (")
+                        wrote_any = False
+                        if a.url_en:
+                            add_hyperlink(p_links, a.url_en, "English translation")
+                            wrote_any = True
+                        if a.url_zh:
+                            if wrote_any:
+                                p_links.add_run(" / ")
+                            add_hyperlink(p_links, a.url_zh, "中訳")
+                        p_links.add_run(")")
+                    p_links.paragraph_format.space_after = Pt(10)
+
+        buf = BytesIO()
+        doc.save(buf); buf.seek(0)
+        filename = f"weekly_news_ja_{end_date.strftime('%Y%m%d')}.docx"
+        resp = HttpResponse(
+            buf.getvalue(),
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        resp["Content-Disposition"] = f'attachment; filename=\"{filename}\"'
+        return resp
